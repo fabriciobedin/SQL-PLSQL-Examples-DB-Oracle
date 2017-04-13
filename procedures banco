@@ -1,0 +1,100 @@
+create sequence seq_correntistas start with 100 increment by 1;
+create sequence seq_contas start with 1000 increment by 1;
+create sequence seq_movimentacoes;
+
+create table correntistas (
+codigo integer primary key,
+nome varchar(50)
+);
+
+create table contas (
+numero integer primary key,
+saldo numeric(8,2),
+correntista integer,
+foreign key (correntista) references correntistas(codigo)
+);
+
+create table movimentacoes (
+numero integer primary key,
+data date,
+valor numeric (7,2),
+natureza char(1),
+conta integer,
+constraint ck_movimentacoes check (natureza in ('D','C')),
+constraint fk_movimentacoes foreign key (conta) references contas(numero)
+);
+
+CREATE or replace procedure abreconta(varnome in string) as
+begin
+	insert into correntistas(codigo, nome) values (seq_correntistas.nextval, varnome);
+	insert into contas(numero, correntista, saldo) values (seq_contas.nextval, seq_correntistas.currval, 0);
+end;
+/
+
+-- executa a funcao
+exec abreconta('Jose');
+exec abreconta('Maria');
+select * from correntistas;
+select * from contas;
+
+CREATE or replace procedure deposita(vdestino in integer, vvalor in real) as
+begin
+	insert into movimentacoes (numero, data, valor, natureza, conta) 
+  values (seq_movimentacoes.nextval, current_date, vvalor, 'C', vdestino);
+	
+	update contas
+	set saldo = saldo + vvalor
+	where numero = vdestino;
+end;
+/
+
+exec deposita (1001, 500.75);
+exec deposita (1002, 2355.85);
+exec deposita (1001, 100.00);
+select * from movimentacoes;
+select * from contas;
+
+CREATE or replace procedure saca(vorigem in integer, vvalor in real) as
+vsaldo real;
+saldo_insuficiente EXCEPTION;
+begin
+  -- obtem saldo da conta a sacar
+	select saldo into vsaldo
+  from contas 
+  where numero = vorigem;
+
+  -- testa se saque permitido
+	if (vsaldo < vvalor) then
+    raise saldo_insuficiente;   
+	end if;
+
+  -- insere historico da movimentacao
+	insert into movimentacoes (numero, data, valor, natureza, conta) 
+  values (seq_movimentacoes.nextval, current_date, vvalor, 'D', vorigem);
+
+  -- atualiza o saldo da conta
+	update contas
+	set saldo = saldo - vvalor
+	where numero = vorigem;
+  
+  EXCEPTION
+    WHEN saldo_insuficiente THEN
+      raise_application_error(-20001, 'Saldo insuficiente para realizar saque');
+    WHEN no_data_found THEN
+      raise_application_error(-20002, 'Conta nao encontrada');
+end;
+/
+exec saca (1001, 5000);
+exec saca (1002, 310);
+
+CREATE or replace procedure transfere(vorigem in int,vdestino in int, vvalor in real) as
+begin
+	saca(vorigem, vvalor);
+	deposita(vdestino, vvalor);
+end;
+/
+
+exec transfere(1001,1002, 100);
+exec transfere(1002,1001, 200);
+
+exec faxina;
