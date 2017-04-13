@@ -1,0 +1,43 @@
+create table triangulos (
+id integer not null primary key,
+vlr1 numeric (5),
+vlr2 numeric (5),
+vlr3 numeric (5),
+tipo varchar(20)
+);
+
+create sequence seq_triangulos;
+
+CREATE OR REPLACE PROCEDURE inseretriangulo (a IN NUMBER, b IN NUMBER, c IN NUMBER) IS
+  triangulo_invalido EXCEPTION;
+  tipo varchar(20);
+BEGIN
+    -- testa condicao de existencia do triangulo
+    if ((a+b<c) or (a+c<b) or (b+c<a)) then
+        raise triangulo_invalido;
+    end if;
+
+    -- classifica o triangulo
+    if ( a = b and a = c) then
+        tipo :=  'Equilatero';
+    elsif (a <> b and a<>c and b<>c) then
+        tipo := 'Escaleno';
+    else 
+        tipo := 'Isosceles';
+    end if;
+    insert into triangulos values (seq_triangulos.nextval, a, b, c, tipo);
+    EXCEPTION
+      WHEN triangulo_invalido THEN
+        raise_application_error(-20001, 'Valores nao formam triangulo');
+END inseretriangulo; 
+/
+
+show errors
+
+execute inseretriangulo(10,10,10);
+execute inseretriangulo(10,10,20);
+execute inseretriangulo(10,20,30);
+-- erro
+execute inseretriangulo(10,20,50);
+
+select * from triangulos;
