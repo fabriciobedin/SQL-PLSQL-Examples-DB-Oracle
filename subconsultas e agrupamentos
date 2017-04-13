@@ -1,0 +1,166 @@
+create table cidades (
+codigo numeric(4) not null,
+cidade varchar(30) not null,
+uf char(2) not null,
+primary key (codigo)
+);
+
+create table marcas (
+codigo numeric(4) not null,
+marca varchar(30) not null,
+primary key (codigo)
+);
+
+create table modelos (
+codigo numeric(4) not null,
+modelo varchar(30) not null,
+marca numeric(4) not null,
+primary key (codigo),
+foreign key (marca) references marcas(codigo)
+);
+
+create table carros (
+placa char(8) not null,
+chassis varchar(11) not null,
+modelo numeric(4) not null,
+ano numeric(4),
+cor varchar(20),
+primary key (placa),
+foreign key (modelo) references modelos(codigo)
+);
+
+create table ocorrencias (
+numero numeric(5) not null,
+data date,
+descricao varchar(30),
+cidade numeric(4) not null,
+placa char(8),
+primary key (numero),
+foreign key (cidade) references cidades (codigo),
+foreign key (placa) references carros (placa)
+);
+
+
+insert into cidades values (1, 'Casca', 'RS');
+insert into cidades values (2, 'Bom Jesus', 'RS');
+insert into cidades values (3, 'Caxias do Sul', 'RS');
+insert into cidades values (4, 'Sao Paulo', 'SP');
+insert into cidades values (5, 'Porto Alegre', 'RS');
+
+insert into marcas values (1, 'GM');
+insert into marcas values (2, 'Fiat');
+insert into marcas values (3, 'Ford');
+insert into marcas values (4, 'Volkswagen');
+insert into marcas values (5, 'Toyota');
+
+insert into modelos values (1, 'Corolla', 5);
+insert into modelos values (2, 'Punto', 2);
+insert into modelos values (3, 'Vectra GT', 1);
+insert into modelos values (4, 'Focus', 3);
+insert into modelos values (5, 'Golf', 4);
+
+insert into carros values ('IMN-2223', 'ABG12212121', 1, 2007, 'vermelho');
+insert into carros values ('IJK-1112', 'XSA234fg44', 2, 2006, 'azul');
+insert into carros values ('MNM-5432', 'ABC2323232', 1, 2007, 'preto');
+insert into carros values ('PTQ-4422', 'MNN5554232', 3, 2007, 'prata');
+insert into carros values ('IKJ-3331', 'FFG9838773', 4, 2007, 'branco');
+
+insert into ocorrencias values (100, '13/11/2007', 'batida frontal em muro', 1, 'IKJ-3331');
+insert into ocorrencias values (101, '10/11/2007', 'capotagem', 2, 'PTQ-4422');
+insert into ocorrencias values (102, '01/10/2007', 'furto', 3, 'MNM-5432');
+insert into ocorrencias values (103, '04/04/2010', 'colisao', 3, 'MNM-5432');
+
+/*------------------------------------------------------------------------------------------------*/
+/* A - Qual o modelo e a marca dos carros que já tiveram ocorrências ?*/
+
+select distinct modelos.modelo, marcas.marca
+from modelos, marcas, carros, ocorrencias
+where carros.modelo = modelos.codigo
+and modelos.marca = marcas.codigo
+and carros.placa = ocorrencias.placa;
+
+/*------------------------------------------------------------------------------------------------*/
+/* B - Selecione quais os carros que já tiveram ocorrências na mesma cidade 
+que o carro de placas ___ ?*/
+
+select distinct carros.placa, carros.chassis, modelos.modelo
+from carros, modelos, ocorrencias
+where carros.modelo = modelos.codigo
+and carros.placa = ocorrencias.placa
+and ocorrencias.cidade IN (
+			   select distinct ocorrencias.cidade
+			   from ocorrencias
+			   where ocorrencias.placa = 'MNM-5432')
+
+insert into ocorrencias values (104, '01/01/2011', 'colisao', 3, 'PTQ-4422');
+
+
+/*------------------------------------------------------------------------------------------------*/
+/* C - Quais cidades já tiveram ocorrências ?*/
+
+select distinct cidades.cidade, cidades.uf
+from cidades, ocorrencias
+where ocorrencias.cidade = cidades.codigo;
+
+
+/*------------------------------------------------------------------------------------------------*/
+/* D - Quais cidades nunca tiveram ocorrências ?*/
+
+select distinct cidades.cidade, cidades.uf
+from cidades, ocorrencias
+where not exists ( select *
+		   from ocorrencias
+		   where ocorrencias.cidade = cidades.codigo );
+
+select cidades.codigo, cidades.cidade, cidades.uf
+from cidades
+where cidades.codigo not in ( select ocorrencias.cidade 
+                              from ocorrencias );
+
+select cidades.codigo, cidades.cidade, cidades.uf
+from cidades
+except
+select cidades.codigo, cidades.cidade, cidades.uf
+from cidades, ocorrencias
+where cidades.codigo = ocorrencias.cidade;
+
+
+/*------------------------------------------------------------------------------------------------*/
+/* E - Obter a quantidade de ocorrências associadas a cada modelo de carro.*/
+
+select modelos.modelo, count(*)
+from ocorrencias, modelos, carros
+where ocorrencias.placa = carros.placa
+and carros.modelo = modelos.codigo
+group by modelos.modelo;
+
+-- outro exemplo --
+select ocorrencias.cidade, count(*)
+from ocorrencias
+group by ocorrencias.cidade
+
+-- mais um exemplo --
+select cidades.cidade, count(*)
+from cidades, ocorrencias
+where cidades.codigo = ocorrencias.cidade
+group by cidades.cidade
+
+
+/*------------------------------------------------------------------------------------------------*/
+/* F - Obter o número de carros existentes para cada modelo cadastrado.*/
+
+select modelos.modelo, count (*)
+from modelos, carros
+where modelos.codigo = carros.modelo
+group by modelos.modelo
+
+
+/*------------------------------------------------------------------------------------------------*/
+/* G - Obter o número de ocorrências que cada cidade possui considerando apenas cidades com mais 
+de 2 ocorrências.*/
+
+select cidades.cidade, count(*) as ocorrencias
+from cidades, ocorrencias
+where ocorrencias.cidade = cidades.codigo
+group by cidades.cidade
+having count(*) > 2;
