@@ -1,0 +1,126 @@
+create sequence seq_alunos start with 1000;
+create table alunos (
+matricula int not null primary key,
+nome varchar(30),
+telefone varchar(15),
+curso varchar(30)
+);
+
+create or replace procedure cadastraaluno(varnome in string, varfone string, 
+                                          varcurso string) is
+begin
+  insert into alunos (matricula, nome, telefone, curso) 
+  values (seq_alunos.nextval, varnome, varfone, varcurso); 
+end;
+/
+
+exec cadastraaluno ('Aluno 1000', '99991111', 'Analise e Desenv. Sistemas');
+exec cadastraaluno ('Aluno 1001', '11111111', 'Analise e Desenv. Sistemas');
+exec cadastraaluno ('Aluno 1002', '22222222', 'Analise e Desenv. Sistemas');
+exec cadastraaluno ('Aluno 1003', '33333333', 'Analise e Desenv. Sistemas');
+exec cadastraaluno ('Aluno 1004', '44444444', 'Analise e Desenv. Sistemas');
+
+create sequence seq_disciplinas;
+create table disciplinas (
+codigo int not null primary key,
+disciplina varchar(30)
+);
+
+create or replace procedure cadastradisciplina(vardisciplina in string) is
+begin
+  insert into disciplinas (codigo, disciplina) 
+  values (seq_disciplinas.nextval, vardisciplina); 
+end;
+/
+exec cadastradisciplina ('Fundamentos Banco Dados');
+exec cadastradisciplina ('Banco Dados Avancados');
+exec cadastradisciplina ('Programacao Orientada Objetos');
+exec cadastradisciplina ('Analise e Projeto Sist.');
+
+select * from disciplinas;
+
+create table turmas (
+codigodisciplina int not null,
+ano int,
+semestre int,
+vagas int,
+primary key (codigodisciplina, ano, semestre),
+foreign key (codigodisciplina) references disciplinas (codigo)
+);
+create or replace procedure abreturma(varcoddisc in int, varano in int, 
+                                      varsemestre in int, varvagas in int) is
+begin
+  insert into turmas (codigodisciplina, ano, semestre, vagas) 
+  values (varcoddisc, varano, varsemestre, varvagas); 
+end;
+/
+exec abreturma(2, 2017, 1, 3);
+exec abreturma(3, 2017, 1, 30);
+exec abreturma(4, 2017, 1, 20);
+select * from turmas;
+
+create table matriculas (
+matriculaAluno integer,
+codigoDisciplina integer,
+ano integer,
+semestre integer,
+nota numeric(3,1),
+faltas integer,
+primary key (matriculaAluno, codigoDisciplina, ano, semestre),
+foreign key (matriculaAluno) references alunos(matricula),
+foreign key (codigoDisciplina) references disciplinas(codigo)
+);
+
+create or replace procedure matricula(valuno int, vdisc int, vano int, vsemestre int) is 
+vvagas int;
+vmatriculados int;
+begin 
+     -- busca numero de matriculados 
+     select count(*) into vmatriculados
+     from matriculas
+     where codigodisciplina = vdisc
+     and   ano = vano
+     and   semestre = vsemestre;
+
+     -- busca numero de vagas 
+     select vagas into vvagas
+     from turmas
+     where codigodisciplina = vdisc
+     and   ano = vano
+     and semestre = vsemestre;
+     
+     -- teste vagas preenchidas 
+     if ( vvagas <= vmatriculados) then
+        raise_application_error(-20001, 'Vagas esgotadas');
+     end if;
+
+     insert into matriculas (matriculaAluno, codigodisciplina, ano, semestre)
+     values (valuno, vdisc, vano, vsemestre);
+end;
+/
+
+select * from turmas
+select * from alunos
+
+exec matricula(1001, 2, 2017, 1);
+exec matricula(1002, 2, 2017, 1);
+exec matricula(1003, 2, 2017, 1);
+-- erro
+exec matricula(1004, 2, 2017, 1);
+
+create or replace procedure aproveitamento(vmat int, vdisc int, vano int, 
+vsem int, vnota real, vfaltas int) is
+begin
+  update matriculas
+  set nota = vnota,
+      faltas = vfaltas
+  where matriculaAluno = vmat
+  and codigoDisciplina =  vdisc
+  and ano = vano
+  and semestre = vsem;
+end;
+/
+
+exec aproveitamento (1001, 2, 2017, 1, 9.5, 4);
+
+select * from matriculas
