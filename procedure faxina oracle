@@ -1,0 +1,260 @@
+create or replace procedure faxina as
+  n_o varchar2(50);
+  n_i varchar2(50);
+  comando varchar2(4000);
+  cursor c_y is select type_name from user_types;
+  cursor c_c is select cluster_name from user_clusters;
+  cursor c_r is select constraint_name, table_name 
+  		from user_constraints inner join user_tables using (table_name)
+                where instr(constraint_name,'$') = 0 and instr(table_name,'$') = 0 and constraint_type = 'R';
+  cursor c_i is select constraint_name, table_name 
+  		from user_constraints inner join user_tables using (table_name)
+                where instr(constraint_name,'$') = 0 and instr(table_name,'$') = 0 and 
+			(iot_type is null or iot_type <> 'IOT')
+		order by r_constraint_name;
+  cursor c_v is select view_name from user_views where instr(view_name,'$') = 0;
+  cursor c_o is select table_name from user_tables where instr(table_name,'$') = 0 and iot_type = 'IOT';
+  cursor c_t is select object_name from user_objects where instr(object_name,'$') = 0 and object_type = 'TABLE'
+                order by object_name;
+  cursor c_a is select object_name from user_objects where instr(object_name,'$') = 0 and object_type = 'TABLE'
+                order by object_name desc;
+  cursor c_x is select index_name from user_indexes where instr(index_name,'$') = 0;
+  cursor c_s is select sequence_name from user_sequences where instr(sequence_name,'$') = 0;
+  cursor c_g is select trigger_name from user_triggers where instr(trigger_name,'$') = 0;
+  cursor c_p is select object_name from user_objects where object_name <> 'FAXINA' and object_type = 'PROCEDURE' 
+                  and  instr(object_name,'$') = 0;
+  cursor c_f is select object_name from user_objects where object_type = 'FUNCTION' and instr(object_name,'$') = 0;
+begin
+ comando := 'PURGE RECYCLEBIN';
+  EXECUTE IMMEDIATE comando;
+ open c_r;
+ loop
+  comando := 'ALTER TABLE ';
+  fetch c_r into n_i, n_o;
+  exit when c_r%NOTFOUND; 
+  if instr(n_o,' ') <> 0 or
+     n_o <> UPPER(n_o)
+  then
+   comando := comando || '"' || n_o || '"';
+  else
+   comando := comando || n_o;
+  end if;
+  comando := comando || ' DROP CONSTRAINT ';
+  if instr(n_i,' ') <> 0 or
+     n_i <> UPPER(n_i)
+  then
+   comando := comando || '"' || n_i || '"';
+  else
+   comando := comando || n_i;
+  end if;
+  EXECUTE IMMEDIATE comando;
+--DBMS_OUTPUT.PUT_LINE(comando);
+ end loop;
+ close c_r;          
+ open c_i;
+ loop
+  comando := 'ALTER TABLE ';
+  fetch c_i into n_i, n_o;
+  exit when c_i%NOTFOUND; 
+  if instr(n_o,' ') <> 0 or
+     n_o <> UPPER(n_o)
+  then
+   comando := comando || '"' || n_o || '"';
+  else
+   comando := comando || n_o;
+  end if;
+  comando := comando || ' DROP CONSTRAINT ';
+  if instr(n_i,' ') <> 0 or
+     n_i <> UPPER(n_i)
+  then
+   comando := comando || '"' || n_i || '" CASCADE';
+  else
+   comando := comando || n_i || ' CASCADE';
+  end if;
+  EXECUTE IMMEDIATE comando;
+--DBMS_OUTPUT.PUT_LINE(comando);
+ end loop;
+ close c_i;          
+ open c_v;
+ loop
+  comando := 'DROP VIEW ';
+  fetch c_v into n_o;
+  exit when c_v%NOTFOUND;
+  if instr(n_o,' ') <> 0 or
+     n_o <> UPPER(n_o)
+  then
+   comando := comando || '"' || n_o || '"';
+  else
+   comando := comando || n_o;
+  end if;
+  EXECUTE IMMEDIATE comando;
+--DBMS_OUTPUT.PUT_LINE(comando);
+ end loop;
+ close c_v;
+ open c_o;
+ loop
+  comando := 'DROP TABLE ';
+  fetch c_o into n_o;
+  exit when c_o%NOTFOUND;
+  if instr(n_o,' ') <> 0 or
+     n_o <> UPPER(n_o)
+  then
+   comando := comando || '"' || n_o || '';
+  else
+   comando := comando || n_o;
+  end if;
+  EXECUTE IMMEDIATE comando;
+--DBMS_OUTPUT.PUT_LINE(comando);
+ end loop;
+ close c_o;
+--   -----corte aqui -----
+ open c_s;
+ loop
+  comando := 'DROP SEQUENCE ';
+  fetch c_s into n_o;
+  exit when c_s%NOTFOUND;
+  if instr(n_o,' ') <> 0 or
+     n_o <> UPPER(n_o)
+  then
+   comando := comando || '"' || n_o || '"';
+  else
+   comando := comando || n_o;
+  end if;
+  EXECUTE IMMEDIATE comando;
+--DBMS_OUTPUT.PUT_LINE(comando);
+ end loop;
+ close c_s;
+ open c_c;
+ loop
+  comando := 'DROP CLUSTER ';
+  fetch c_c into n_o;
+  exit when c_c%NOTFOUND;
+  if instr(n_o,' ') <> 0 or
+     n_o <> UPPER(n_o)
+  then
+   comando := comando || '"' || n_o || '" INCLUDING TABLES CASCADE CONSTRAINTS';
+  else
+   comando := comando || n_o || ' INCLUDING TABLES CASCADE CONSTRAINTS';
+  end if;
+  EXECUTE IMMEDIATE comando;
+--DBMS_OUTPUT.PUT_LINE(comando);
+ end loop;
+ close c_c;
+ open c_g;
+ loop
+  comando := 'DROP TRIGGER ';
+  fetch c_g into n_o;
+  exit when c_g%NOTFOUND;
+  if instr(n_o,' ') <> 0 or
+     n_o <> UPPER(n_o)
+  then
+   comando := comando || '"' || n_o || '"';
+  else
+   comando := comando || n_o;
+  end if;
+  EXECUTE IMMEDIATE comando;
+--DBMS_OUTPUT.PUT_LINE(comando);
+ end loop;
+ close c_g;
+ open c_p;
+ loop
+  comando := 'DROP PROCEDURE ';
+  fetch c_p into n_o;
+  exit when c_p%NOTFOUND;
+  if instr(n_o,' ') <> 0 or
+     n_o <> UPPER(n_o)
+  then
+   comando := comando || '"' || n_o || '"';
+  else
+   comando := comando || n_o;
+  end if;
+  EXECUTE IMMEDIATE comando;
+--DBMS_OUTPUT.PUT_LINE(comando);
+ end loop;
+ close c_p;
+ open c_f;
+ loop
+  comando := 'DROP FUNCTION ';
+  fetch c_f into n_o;
+  exit when c_f%NOTFOUND;
+  if instr(n_o,' ') <> 0 or
+     n_o <> UPPER(n_o)
+  then
+   comando := comando || '"' || n_o || '"';
+  else
+   comando := comando || n_o;
+  end if;
+  EXECUTE IMMEDIATE comando;
+--DBMS_OUTPUT.PUT_LINE(comando);
+ end loop;
+ close c_f;
+ open c_t;
+ loop
+  comando := 'DROP TABLE ';
+  fetch c_t into n_o;
+  exit when c_t%NOTFOUND;
+  if instr(n_o,' ') <> 0 or
+     n_o <> UPPER(n_o)
+  then
+   comando := comando || '"' || n_o || '" CASCADE CONSTRAINTS PURGE';
+  else
+   comando := comando || n_o || ' CASCADE CONSTRAINTS PURGE';
+  end if;
+  EXECUTE IMMEDIATE comando;
+--DBMS_OUTPUT.PUT_LINE(comando);
+ end loop;
+ close c_t;
+ open c_y;
+ loop
+  comando := 'DROP TYPE ';
+  fetch c_y into n_o;
+  exit when c_y%NOTFOUND;
+  if instr(n_o,' ') <> 0 or
+     n_o <> UPPER(n_o)
+  then
+   comando := comando || '"' || n_o || '" FORCE';
+  else
+   comando := comando || n_o || ' FORCE';
+  end if;
+  EXECUTE IMMEDIATE comando;
+--DBMS_OUTPUT.PUT_LINE(comando);
+ end loop;
+ close c_y;
+ open c_x;
+ loop
+  comando := 'DROP INDEX ';
+  fetch c_x into n_o;
+  exit when c_x%NOTFOUND;
+  if instr(n_o,' ') <> 0 or
+     n_o <> UPPER(n_o)
+  then
+   comando := comando || '"' || n_o || '"';
+  else
+   comando := comando || n_o;
+  end if;
+  EXECUTE IMMEDIATE comando;
+--DBMS_OUTPUT.PUT_LINE(comando);
+ end loop;
+ close c_x;
+EXCEPTION
+WHEN OTHERS THEN
+ begin
+ open c_a;
+ loop
+  comando := 'DROP TABLE ';
+  fetch c_a into n_o;
+  exit when c_t%NOTFOUND;
+  if instr(n_o,' ') <> 0 or
+     n_o <> UPPER(n_o)
+  then
+   comando := comando || '"' || n_o || '" CASCADE CONSTRAINTS PURGE';
+  else
+   comando := comando || n_o || ' CASCADE CONSTRAINTS PURGE';
+  end if;
+  EXECUTE IMMEDIATE comando;
+--DBMS_OUTPUT.PUT_LINE(comando);
+ end loop;
+ close c_a;
+ end;
+end;
+/
