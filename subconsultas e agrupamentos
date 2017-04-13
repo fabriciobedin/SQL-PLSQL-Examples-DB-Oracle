@@ -1,5 +1,3 @@
-![atividade](https://github.com/fabriciobedin/SQL-Database-Oracle-Questions/blob/master/imagens/seguradora%20de%20veiculos.jpg?raw=true)
-
 create table cidades (
 codigo numeric(4) not null,
 cidade varchar(30) not null,
