@@ -1,0 +1,314 @@
+-- 1 --
+-- Não podem haver Categorias com a mesma descrição
+create table categorias (
+codigo integer not null primary key,
+categoria varchar(30) unique
+);
+
+create table cidades (
+codigo integer not null,
+cidade varchar(30) not null,
+uf char(2),
+primary key (codigo)
+);
+
+create table operacoes (
+codigo integer not null,
+operacao varchar(20) not null,
+primary key (codigo)
+);
+
+create table transportadoras (
+codigo integer not null,
+nome varchar(40) not null,
+primary key (codigo)
+);
+
+create table produtos (
+codigo integer not null,
+descricao varchar(50) not null,
+localizacao varchar(30),
+unidade char(3),
+estoqueminimo numeric(6,2),
+estoquemaximo numeric(6,2),
+estoqueatual numeric(6,2) not null,
+categoria integer,
+preco numeric(7,2),
+primary key (codigo),
+foreign key (categoria) references categorias(codigo)
+);
+
+-- Na tabela de Pessoas, a coluna FisicaJurica somente pode 
+-- aceitar um dos valores F ou J
+create table pessoas (
+codigo integer not null,
+fisicajuridica char(1) not null,
+nome varchar(50) not null,
+endereco varchar(50) not null,
+telefone varchar(15) not null,
+cidade integer not null,
+cep char(10) not null,
+cpfcnpj varchar(20) not null,
+rgie varchar(20),
+email varchar(40),
+primary key (codigo),
+foreign key (cidade) references cidades(codigo),
+check (fisicajuridica in ('F', 'J'))
+);
+
+-- Na tabela de Notas, a coluna frete por conta somente pode 
+-- aceitar os valores 1 ou 2
+-- Ao omitir a data de uma Nota, a data atual deve ser obtida 
+-- e armazenada
+create table notas (
+numero integer not null,
+data date default current_date,
+pessoa integer not null,
+operacao integer not null,
+desconto numeric (6,2),
+transportadora integer not null,
+freteporconta char(1),
+valorfrete numeric(6,2),
+primary key (numero),
+foreign key (pessoa) references pessoas (codigo),
+foreign key (operacao) references operacoes (codigo),
+foreign key (transportadora) references transportadoras (codigo),
+check (freteporconta IN ('1', '2'))
+);
+
+create table itensnotas (
+nota integer not null,
+produto integer not null,
+quantidade numeric (6,2) not null,
+precounitario numeric (6,2) not null,
+primary key (nota, produto),
+foreign key (nota) references notas (numero) on delete cascade,
+foreign key (produto) references produtos (codigo)
+);
+
+create table parcelas (
+nota integer not null,
+vencimento date not null,
+valor numeric(6,2) not null,
+pagamento date,
+primary key (nota, vencimento),
+foreign key (nota) references notas(numero) on delete cascade
+);
+
+create table produtosfornecedores (
+produto integer not null,
+fornecedor integer not null,
+primary key (produto, fornecedor),
+foreign key (produto) references produtos (codigo),
+foreign key (fornecedor) references pessoas (codigo)
+);
+
+
+-- 2 --
+insert into cidades values (01, 'Carazinho', 'RS');
+insert into cidades values (02, 'Passo fundo', 'RS');
+insert into cidades values (03, 'Sarandi', 'RS');
+insert into cidades values (04, 'Marau', 'RS');
+insert into cidades values (05, 'Soledade', 'RS');
+insert into cidades values (06, 'Porto Alegre', 'RS');
+insert into cidades values (07, 'Vacaria', 'RS');
+insert into cidades values (08, 'Sao Paulo', 'SP');
+insert into cidades values (09, 'Rio de Janeiro', 'RJ');
+insert into cidades values (10, 'Florianopolis', 'SC');
+
+insert into categorias values (01, 'padaria');
+insert into categorias values (02, 'bazar');
+insert into categorias values (03, 'mercearia');
+insert into categorias values (04, 'limpeza');
+insert into categorias values (05, 'frutas e legumes');
+insert into categorias values (06, 'massas e biscoitos');
+insert into categorias values (07, 'açougue');
+insert into categorias values (08, 'higiene');
+insert into categorias values (09, 'bebidas');
+insert into categorias values (10, 'cereais e derivados');
+
+insert into operacoes values (01, 'venda ao consumidor');
+insert into operacoes values (02, 'transporte');
+insert into operacoes values (03, 'devolucao');
+
+insert into transportadoras values (01, 'tw transportes');
+insert into transportadoras values (02, 'expresso são miguel');
+insert into transportadoras values (03, 'dicanalli');
+insert into transportadoras values (04, 'braspress');
+insert into transportadoras values (05, 'reunidas');
+
+insert into pessoas values (01, 'F', 'Pedro Alvares Cabral', 'Rua da Independencia', '(54)3232-3223', 01, '0', '0', '0', null);
+insert into pessoas values (02, 'J', 'NVV Cia ltda', 'rua cipo', '3329-1777', 02, '99500000', '234567', '987654', 'nvv@gmail.com');
+insert into pessoas values (03, 'F', 'Joaquim Jose', 'Rua Minas Gerais', '3329-1776', 03, '99500000', '345678', '765432', 'pedro@gmail.com');
+insert into pessoas values (04, 'J', 'Maria Antonieta', 'Rua Amazonas', '3329-1775', 04, '99500000', '567890', '324567', 'maria@gmail.com');
+insert into pessoas values (05, 'F', 'Juca Chaves', 'Rua dos Menestreus', '3329-1774', 05, '99500000', '678901', '768905', 'jucachaves@gmail.com');
+insert into pessoas values (06, 'F', 'Policarpo Quaresma', 'Rua das Letras', '3329-1567', 06, '99500000', '667890', '761234', 'quaresma@gmail.com');
+
+insert into produtos values (01, 'sabao em pó', 'secao L-1', 'kg', 120, null, 112, 4, 4.75);
+insert into produtos values (02, 'creme dental sorriso 90g', 'secao H-1', 'uni', 100, null, 50, 8, 1.95);
+insert into produtos values (03, 'picanha maturada', 'secao H-1', 'kg', null, null, 60, 7, 12.95);
+insert into produtos values (04, 'arroz integral', 'secao H-1', 'kg', null, null, 70, 10, 4.88);
+insert into produtos values (05, 'guarana lata', 'secao H-1', 'uni', null, null, 90, 9, 0.98);
+
+insert into produtos values 
+(06, 'coca-cola lata', 'secao H-1', 'uni', null, null, 52, 9, 1.25);
+
+
+insert into notas values (01, '2010/10/10', 1, '1', 0, 1, 1, 0);
+insert into notas values (02, '2008/07/03', 2, '1', 0, 1, 1, 35.75);
+insert into notas values (03, '2009/10/25', 2, '1', 0, 1, 1, 75.50);
+insert into notas (numero, pessoa, operacao, desconto, transportadora, 
+freteporconta, valorfrete) values (04, 2, '1', 0, 1, 1, 75.50);
+
+insert into itensnotas values (1, 1, 25, 4.75);
+insert into itensnotas values (1, 2, 3, 1.95);
+insert into itensnotas values (1, 3, 2, 12.95);
+insert into itensnotas values (1, 4, 4, 4.88);
+insert into itensnotas values (2, 1, 10, 4.75);
+insert into itensnotas values (3, 1, 2, 4.75);
+
+insert into produtosfornecedores values (01, 02); 
+insert into produtosfornecedores values (02, 02); 
+insert into produtosfornecedores values (02, 04); 
+
+insert into parcelas values (1, '2010/11/10', 34.00, '2010/11/10');
+insert into parcelas values (1, '2010/12/10', 34.00, '2010/12/10');
+insert into parcelas values (1, '2011/01/10', 34.00, null);
+insert into parcelas values (1, '2011/02/10', 34.00, null);
+insert into parcelas values (1, '2011/03/10', 34.00, null);
+
+-- 3
+-- a
+select codigo, descricao, localizacao, preco
+from produtos
+order by descricao;
+
+-- b
+select descricao, localizacao
+from produtos
+where estoqueatual < estoqueminimo;
+
+-- c
+select pessoas.nome
+from pessoas, produtosfornecedores
+where pessoas.codigo = produtosfornecedores.fornecedor
+and produtosfornecedores.produto = 2;  
+
+select pessoas.nome
+from pessoas
+INNER JOIN produtosfornecedores on pessoas.codigo = produtosfornecedores.fornecedor
+where produtosfornecedores.produto = 2;  
+
+
+-- d
+select distinct pessoas.codigo, 
+       pessoas.nome,
+       pessoas.endereco,
+       cidades.cidade,
+       cidades.uf,
+       pessoas.telefone
+from pessoas, cidades, notas, operacoes
+where pessoas.cidade = cidades.codigo
+and pessoas.codigo = notas.pessoa
+and notas.operacao = operacoes.codigo
+and operacoes.operacao = 'venda ao consumidor';
+
+-- e
+select pessoas.nome, 
+       pessoas.telefone, 
+       cidades.cidade, 
+       cidades.uf,
+       parcelas.vencimento,
+       parcelas.valor
+from pessoas, parcelas, notas, cidades
+where pessoas.cidade = cidades.codigo
+and   pessoas.codigo = notas.pessoa
+and notas.numero = parcelas.nota
+and parcelas.pagamento is null;
+
+-- f
+select *
+from parcelas
+where pagamento is null
+and vencimento between '2011-01-01' 
+               and '2011-03-01';
+
+select *
+from parcelas
+where pagamento is null
+and vencimento >= '2011-01-01' 
+and vencimento <= '2011-03-01';
+
+-- g
+select produtos.codigo, 
+       produtos.descricao, 
+       itensnotas.quantidade,
+       itensnotas.precounitario,
+       itensnotas.quantidade * itensnotas.precounitario as total
+from produtos, itensnotas
+where produtos.codigo = itensnotas.produto
+and itensnotas.nota = 1;
+
+-- h
+select sum(itensnotas.quantidade * itensnotas.precounitario) as total
+from itensnotas
+where itensnotas.nota = 1
+
+-- i
+select nome, telefone
+from pessoas
+where upper(nome) like '%ABR%';
+
+-- j
+update pessoas
+set endereco = 'Rua XYZ',
+    telefone = '11111111',
+    cidade = '1',
+    cep = '99999-999',
+    email = 'seila@com.com'
+where codigo = 1;
+
+-- k
+update produtos
+set preco = preco * 1.2
+where categoria = 9;
+
+-- l
+update parcelas
+set valor = valor * 1.05
+where vencimento < current_date - 30
+and pagamento is null;
+
+-- m
+delete from parcelas
+where pagamento is not null
+and nota in ( select numero from notas
+              where pessoa = 1);
+
+-- n
+alter table pessoas
+add pessoacontato varchar(40),
+add website varchar(100);
+
+-- o
+alter table categorias
+add unique (categoria);
+
+-- p
+select categorias.categoria, count(*)
+from categorias, produtos
+where produtos.categoria = categorias.codigo
+group by categorias.categoria;
+
+
+-- q
+drop table produtosfornecedores;
+drop table parcelas;
+drop table itensnotas;
+drop table notas;
+drop table transportadoras;
+drop table pessoas;
+drop table operacoes;
+drop table produtos;
+drop table categorias;
+drop table cidades cascade;
