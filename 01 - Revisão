@@ -178,17 +178,23 @@ insert into parcelas values (1, '2011/02/10', 34.00, null);
 insert into parcelas values (1, '2011/03/10', 34.00, null);
 
 -- 3
--- a
+-------------------------------------------------------------------------------------------
+-- a - Elabore uma lista de preços de produtos, consistindo de: código, descrição,
+localização e preço do produto. A lista deve ser ordenada pela descrição do produto.
+
 select codigo, descricao, localizacao, preco
 from produtos
 order by descricao;
+-------------------------------------------------------------------------------------------
+-- b - Listar a descrição, localização dos produtos que estão com o estoque atual abaixo do
+valor mínimo estabelecido
 
--- b
 select descricao, localizacao
 from produtos
 where estoqueatual < estoqueminimo;
+-------------------------------------------------------------------------------------------
+-- c - Listar o nome dos fornecedores do produto de código _ _
 
--- c
 select pessoas.nome
 from pessoas, produtosfornecedores
 where pessoas.codigo = produtosfornecedores.fornecedor
@@ -199,8 +205,10 @@ from pessoas
 INNER JOIN produtosfornecedores on pessoas.codigo = produtosfornecedores.fornecedor
 where produtosfornecedores.produto = 2;  
 
+-------------------------------------------------------------------------------------------
+-- d - Listar o código, nome, endereço, cidade e telefone do clientes que já realizaram
+alguma compra da empresa
 
--- d
 select distinct pessoas.codigo, 
        pessoas.nome,
        pessoas.endereco,
@@ -212,8 +220,11 @@ where pessoas.cidade = cidades.codigo
 and pessoas.codigo = notas.pessoa
 and notas.operacao = operacoes.codigo
 and operacoes.operacao = 'venda ao consumidor';
+-------------------------------------------------------------------------------------------
+-- e - Listar o nome, telefone, cidade dos clientes que possuem parcelas ainda não pagas
+(com a data de pagamento vazia) juntamente com a data de vencimento e o valor
+destas parcelas
 
--- e
 select pessoas.nome, 
        pessoas.telefone, 
        cidades.cidade, 
@@ -225,8 +236,10 @@ where pessoas.cidade = cidades.codigo
 and   pessoas.codigo = notas.pessoa
 and notas.numero = parcelas.nota
 and parcelas.pagamento is null;
+-------------------------------------------------------------------------------------------
+-- f - Listar todas as parcelas com data de vencimento entre _ _ _ _ _ e _ _ _ _ _ e ainda
+não pagas
 
--- f
 select *
 from parcelas
 where pagamento is null
@@ -238,8 +251,11 @@ from parcelas
 where pagamento is null
 and vencimento >= '2011-01-01' 
 and vencimento <= '2011-03-01';
+-------------------------------------------------------------------------------------------
+-- g - Listar os itens da nota de número _ _ _ _ _ com as seguintes informações: Código
+do produto, descrição do produto, quantidade, preço unitário e valor total do item
+(este calculado de preço unitário x quantidade)
 
--- g
 select produtos.codigo, 
        produtos.descricao, 
        itensnotas.quantidade,
@@ -248,18 +264,23 @@ select produtos.codigo,
 from produtos, itensnotas
 where produtos.codigo = itensnotas.produto
 and itensnotas.nota = 1;
+-------------------------------------------------------------------------------------------
+-- h - Qual o valor total da nota anterior ?
 
--- h
 select sum(itensnotas.quantidade * itensnotas.precounitario) as total
 from itensnotas
 where itensnotas.nota = 1
+-------------------------------------------------------------------------------------------
+-- i - Selecionar o nome e telefone de todas as pessoas que possuam a palavra ‘Silva’ em
+qualquer parte do nome
 
--- i
 select nome, telefone
 from pessoas
 where upper(nome) like '%ABR%';
+-------------------------------------------------------------------------------------------
+-- j - Atualizar o endereço, telefone, código da cidade, cep e email de uma pessoa já
+existente no banco de dados.
 
--- j
 update pessoas
 set endereco = 'Rua XYZ',
     telefone = '11111111',
@@ -267,41 +288,52 @@ set endereco = 'Rua XYZ',
     cep = '99999-999',
     email = 'seila@com.com'
 where codigo = 1;
+-------------------------------------------------------------------------------------------
+-- k - Atualizar o preço dos produtos da categoria de código de sua escolha, reajustandoos
+em 20%
 
--- k
 update produtos
 set preco = preco * 1.2
 where categoria = 9;
+-------------------------------------------------------------------------------------------
+-- l - Atualizar o valor de todas as parcelas vencidas há mais de 30 dias em 5%.
 
--- l
 update parcelas
 set valor = valor * 1.05
 where vencimento < current_date - 30
 and pagamento is null;
-
--- m
+-------------------------------------------------------------------------------------------
+-- m - Excluir todas a parcelas pagas do cliente de código de sua escolha.
 delete from parcelas
+
 where pagamento is not null
 and nota in ( select numero from notas
               where pessoa = 1);
+-------------------------------------------------------------------------------------------
+-- n - Alterar a estrutura da tabela pessoas, acrescentando as colunas pessoaContato e
+website, ambas do tipo caracteres.
 
--- n
 alter table pessoas
 add pessoacontato varchar(40),
 add website varchar(100);
+-------------------------------------------------------------------------------------------
+-- o - Acrescentar na tabela de categorias uma restrição de forma que não sejam
+permitidas duplicidades na descrição
 
--- o
 alter table categorias
 add unique (categoria);
+-------------------------------------------------------------------------------------------
+-- p - Obter a descrição de cada categoria e a contagem de produtos distintos que cada
+uma possui
 
--- p
 select categorias.categoria, count(*)
 from categorias, produtos
 where produtos.categoria = categorias.codigo
 group by categorias.categoria;
 
+-------------------------------------------------------------------------------------------
+-- q - Excluir todas as tabelas deste esquema.
 
--- q
 drop table produtosfornecedores;
 drop table parcelas;
 drop table itensnotas;
