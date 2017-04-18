@@ -1,0 +1,46 @@
+create or replace function imc (peso real, altura real) return real as
+begin
+  --return peso / (altura ^ 2); (POSTGRES)
+  return peso / power (altura, 2);
+end;
+
+select imc (82, 1.84) from dual;
+
+
+create or replace function imcInterpretacao (peso real, altura real) return string as
+vimc real;
+begin
+  vimc := imc(peso, altura);
+  if (vimc <= 18.5) then
+    return 'Abaixo do peso';
+  elsif
+  (vimc <= 25) then
+    return 'Peso normal';
+  elsif
+  (vimc <= 30) then
+    return 'Acima do peso';
+  else
+    return 'Obeso';
+  end if;
+end;
+
+show errors
+
+create table pessoas(
+  id int not null primary key,
+  nome varchar(30),
+  peso numeric(5,2),
+  altura numeric(3,2)
+)
+
+insert into pessoas values (1, 'Pessoa um', 85, 1.82);
+insert into pessoas values (2, 'Pessoa dois', 75, 1.65);
+insert into pessoas values (3, 'Pessoa tres', 55, 1.7);
+
+select  nome,
+        peso,
+        altura,
+        imc(peso, altura) as imc,
+        imcINterpretacao(peso, altura) as interp
+from pessoas;
+
