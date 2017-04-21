@@ -2,20 +2,22 @@
 Examples I'm seeing in class
 
 ### Criação de tabelas
+```
+create table pessoas (
+  codigo integer not null,
+  fisicajuridica char(1) not null,
+  nome varchar(50) not null,
+  cidade integer not null,
+  saldo numeric(7,2),
+  data date default current_date,
+  nota integer,
+  primary key (codigo),
+  foreign key (cidade) references cidades(codigo),
+  foreign key (nota) references notas (numero) on delete cascade,
+  check (fisicajuridica in ('F', 'J')) --fisicajuridica vai aceitar apenas F ou J
+);
+```
 
-<code>create table pessoas (</code><br>
-<code>  codigo integer not null,</code><br>
-<code>  fisicajuridica char(1) not null,</code><br>
-<code>  nome varchar(50) not null,</code><br>
-<code>  cidade integer not null,</code><br>
-<code>  saldo numeric(7,2),</code><br>
-<code>  data date default current_date,</code><br>
-<code>  nota integer,</code><br>
-<code>  primary key (codigo),</code><br>
-<code>  foreign key (cidade) references cidades(codigo),</code><br>
-<code>  foreign key (nota) references notas (numero) on delete cascade,</code><br>
-<code>  check (fisicajuridica in ('F', 'J'))</code> --fisicajuridica vai aceitar apenas F ou J<br>
-<code>);</code><br>
 
 ### Inserção de valores nas tabelas
 <code>insert into pessoas (codigo, fisicajuridica, nome, cidade, saldo, nota)</code><br>
