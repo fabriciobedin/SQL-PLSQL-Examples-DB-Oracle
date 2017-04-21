@@ -1,7 +1,7 @@
 # ExampleSQL
 Examples I'm seeing in class
 
-### Criação de tabelas
+## Criação de tabelas
 ```
 create table pessoas (
   codigo integer not null,
@@ -19,15 +19,15 @@ create table pessoas (
 ```
 
 
-### Inserção de valores nas tabelas
+## Inserção de valores nas tabelas
 ```
 insert into pessoas (codigo, fisicajuridica, nome, cidade, saldo, nota)
        values (01, 'F', 'Fabricio Bedin', '05', '23856.25', '2545873221');
 ```
 
-### Alguns usos do SELECT
+## Alguns usos do SELECT
 
-##### •Elabore uma lista de preços de produtos, consistindo de: código, descrição, localização e preço do produto. A lista deve ser ordenada pela descrição do produto.
+* Elabore uma lista de preços de produtos, consistindo de: código, descrição, localização e preço do produto. A lista deve ser ordenada pela descrição do produto.
 ```
 select codigo, descricao, localizacao, preco</code><br>
 from produtos
@@ -49,7 +49,7 @@ where pessoas.codigo = produtosfornecedores.fornecedor
 and produtosfornecedores.produto = 2;
 ```
 
-##### •Listar o nome, telefone, cidade dos clientes que possuem parcelas ainda não pagas (com a data de pagamento vazia) juntamente com a data de vencimento e o valor destas parcelas
+* Listar o nome, telefone, cidade dos clientes que possuem parcelas ainda não pagas (com a data de pagamento vazia) juntamente com a data de vencimento e o valor destas parcelas
 ```
 select pessoas.nome,
        pessoas.telefone,
