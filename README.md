@@ -20,53 +20,48 @@ create table pessoas (
 
 
 ### Inserção de valores nas tabelas
-<code>insert into pessoas (codigo, fisicajuridica, nome, cidade, saldo, nota)</code><br>
-<code>       values (01, 'F', 'Fabricio Bedin', '05', '23856.25', '2545873221');</code><br>
+```
+insert into pessoas (codigo, fisicajuridica, nome, cidade, saldo, nota)
+       values (01, 'F', 'Fabricio Bedin', '05', '23856.25', '2545873221');
+```
 
 ### Alguns usos do SELECT
 
 ##### •Elabore uma lista de preços de produtos, consistindo de: código, descrição, localização e preço do produto. A lista deve ser ordenada pela descrição do produto.
-<code>select codigo, descricao, localizacao, preco</code><br>
-<code>from produtos</code><br>
-<code>order by descricao;</code><br>
+```
+select codigo, descricao, localizacao, preco</code><br>
+from produtos
+order by descricao;
+```
 
 ##### •Listar a descrição, localização dos produtos que estão com o estoque atual abaixo do valor mínimo estabelecido
-<code>select descricao, localizacao</code><br>
-<code>from produtos</code><br>
-<code>where estoqueatual < estoqueminimo; </code><br>
+```
+select descricao, localizacao
+from produtos
+where estoqueatual < estoqueminimo; 
+```
 
 ##### •Listar o nome dos fornecedores do produto de código 2
-<code>select pessoas.nome</code><br>
-<code>from pessoas, produtosfornecedores</code><br>
-<code>where pessoas.codigo = produtosfornecedores.fornecedor</code><br>
-<code>and produtosfornecedores.produto = 2;</code><br>
+```
+select pessoas.nome
+from pessoas, produtosfornecedores
+where pessoas.codigo = produtosfornecedores.fornecedor
+and produtosfornecedores.produto = 2;
+```
 
 ##### •Listar o nome, telefone, cidade dos clientes que possuem parcelas ainda não pagas (com a data de pagamento vazia) juntamente com a data de vencimento e o valor destas parcelas
-<code>select pessoas.nome,</code><br>
-<code>       pessoas.telefone,</code><br>
-<code>       cidades.cidade,</code><br>
-<code>       cidades.uf,</code><br>
-<code>       parcelas.vencimento,</code><br>
-<code>       parcelas.valor</code><br>
-<code>from pessoas, parcelas, notas, cidades</code><br>
-<code>where pessoas.cidade = cidades.codigo</code><br>
-<code>and   pessoas.codigo = notas.pessoa</code><br>
-<code>and notas.numero = parcelas.nota</code><br>
-<code>and parcelas.pagamento is null;</code><br>
-
-
 ```
-select *
-from parcelas
-where pagamento is null
-and vencimento between '2011-01-01' 
-               and '2011-03-01';
-
-select *
-from parcelas
-where pagamento is null
-and vencimento >= '2011-01-01' 
-and vencimento <= '2011-03-01';
+select pessoas.nome,
+       pessoas.telefone,
+       cidades.cidade,
+       cidades.uf,
+       parcelas.vencimento,
+       parcelas.valor
+from pessoas, parcelas, notas, cidades
+where pessoas.cidade = cidades.codigo
+and   pessoas.codigo = notas.pessoa
+and notas.numero = parcelas.nota
+and parcelas.pagamento is null;
 ```
 
 
