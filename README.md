@@ -151,6 +151,55 @@ add website varchar(100);
 alter table categorias
 add unique (categoria);
 ```
+## Subconsultas e Agrupamentos / Conjuntos e Agregação
+* Obter as cidades que não possuem clientes relacionados
+```
+select codigo, cidade, uf
+from cidades
+EXCEPT
+select cidades.codigo, cidades.cidade, cidades.uf
+from cidades, pessoas
+where cidades.codigo = pessoas.cidade
+```
+ou
+```
+select cidades.codigo, cidades.cidade, cidades.uf
+from cidades
+where cidades.codigo NOT IN ( select cidade from pessoas);
+```
+
+* Obter produtos que não possuem vendas
+```
+select codigo, descricao
+from produtos
+EXCEPT
+select itensnotas.produto, produtos.descricao
+from itensnotas, produtos, notas
+where itensnotas.produto = produtos.codigo
+and   notas.operacao = 1;
+```
+
+* Obter o número de itens que a nota de número 1 possui
+```
+select count(*)
+from itensnotas
+where nota = 1;
+```
+
+* Obter o preço médio dos produtos da categoria 9
+```
+select avg(preco)
+from produtos
+where categoria = 9;
+```
+
+* Obter a descrição do produto mais caro
+```
+select produtos.descricao
+from produtos
+where preco = ( select max(preco)
+		            from produtos);
+```
 
 ## Visões
 
@@ -201,12 +250,66 @@ view1.nome as projeto
 from departamentos, view1
 where departamentos.codigo = view1.codigo;
 ```
+## Sequences
+```
+create sequence seq_gera1 start 100;
+create sequence seq_gera2 increment by 2 maxvalue 9 cycle nocache;
 
+select nextval('seq_gera1')||'-'||nextval('seq_gera2')
+from dual;
 
+create table teste (
+codigo varchar(5) primary key,
+descricao varchar(30)
+);
+
+insert into teste values (seq_gera1.nextval||'-'||seq_gera2.nextval, 'alguma coisa');
+```
 
 
 ## Procedures
 
+* Procedure PAR ou IMPAR
+```
+create or replace procedure parimpar (valor in number) as
+ tipo VARCHAR2(5);
+BEGIN
+    IF MOD(valor,2) = 0 THEN
+      tipo := 'PAR';
+    ELSE
+      tipo := 'IMPAR';
+    END IF;
+    DBMS_OUTPUT.PUT_LINE ('O numero  ' || valor || ' e´ ' || tipo);
+END;
+/
+```
+
+* Procedure PAR
+```
+create or replace procedure par(valor integer) as
+ erro EXCEPTION;
+BEGIN
+    IF MOD(valor,2) = 0 THEN
+      DBMS_OUTPUT.PUT_LINE ('Numero par recebido');
+    ELSE
+      raise erro;
+    END IF;
+
+    EXCEPTION
+      WHEN erro THEN
+        raise_application_error( -20001, 'Erro! Numero impar recebido');
+END;
+/
+```
+
+* Elabore um procedimento armazenado inseretriangulo(vlr1, vlr2, vlr3) que recebe valores para os lados de um triângulo e a seguir insere na tabela abaixo os valores dos lados dos triangulos e o tipo do triângulo formado (equilátero, isósceles, escaleno).
+*Triangulos 
+id integer
+vlr1 number
+vlr2 number
+vlr3 number
+tipo varchar
+Caso os valores fornecidos para os lados não permitam a formação de um triângulo, o usuário deverá receber uma mensagem indicativa.*
 
 ```
 create table triangulos (
@@ -253,14 +356,140 @@ execute inseretriangulo(10,20,50);
 
 select * from triangulos;
 ```
+### Procedure Banco
+* O esquema abaixo representa de forma parcial uma agência bancária. A respeito deste esquema, desenvolva os seguintes procedures:
+*Correntista = #Código, nome
+Contas = #Número, saldo, @Código do correntista
+Movimentaçao=#Número, data, valor, natureza (débito/crédito), @numero da conta*
 
+*Observações:
+a cada operação realizada (saque, depósito, etc) um registro de movimentação deve ser inserido automaticamente pelas funções na tabela de Movimentação, descrevendo a operação se houve débito ou crédito
+não poderá haver saque de valor superior ao disponível no saldo da conta*
 
 ```
+create sequence seq_correntistas start with 100 increment by 1;
+create sequence seq_contas start with 1000 increment by 1;
+create sequence seq_movimentacoes;
+
+create table correntistas (
+codigo integer primary key,
+nome varchar(50)
+);
+
+create table contas (
+numero integer primary key,
+saldo numeric(8,2),
+correntista integer,
+foreign key (correntista) references correntistas(codigo)
+);
+
+create table movimentacoes (
+numero integer primary key,
+data date,
+valor numeric (7,2),
+natureza char(1),
+conta integer,
+constraint ck_movimentacoes check (natureza in ('D','C')),
+constraint fk_movimentacoes foreign key (conta) references contas(numero)
+);
 ```
 
 
+* Insere um novo cliente e abre uma conta associada ao mesmo
+*a) abreConta(nome)*
 ```
+CREATE or replace procedure abreconta(varnome in string) as
+begin
+	insert into correntistas(codigo, nome) values (seq_correntistas.nextval, varnome);
+	insert into contas(numero, correntista, saldo) values (seq_contas.nextval, seq_correntistas.currval, 0);
+end;
+/
+```
+*executa*
+```
+exec abreconta('Jose');
+exec abreconta('Maria');
+select * from correntistas;
+select * from contas;
 ```
 
+* Deposita valor em uma conta
+*b) deposita(Numero conta, valor)*
+```
+CREATE or replace procedure deposita(vdestino in integer, vvalor in real) as
+begin
+	insert into movimentacoes (numero, data, valor, natureza, conta) 
+  values (seq_movimentacoes.nextval, current_date, vvalor, 'C', vdestino);
+	
+	update contas
+	set saldo = saldo + vvalor
+	where numero = vdestino;
+end;
+/
+```
+*executa*
+```
+exec deposita (1001, 500.75);
+exec deposita (1002, 2355.85);
+exec deposita (1001, 100.00);
+select * from movimentacoes;
+select * from contas;
+```
 
+* Saca valor de uma conta
+*c) saca(Numero conta, valor)*
+```
+CREATE or replace procedure saca(vorigem in integer, vvalor in real) as
+vsaldo real;
+saldo_insuficiente EXCEPTION;
+begin
+  -- obtem saldo da conta a sacar
+	select saldo into vsaldo
+  from contas 
+  where numero = vorigem;
+
+  -- testa se saque permitido
+	if (vsaldo < vvalor) then
+    raise saldo_insuficiente;   
+	end if;
+
+  -- insere historico da movimentacao
+	insert into movimentacoes (numero, data, valor, natureza, conta) 
+  values (seq_movimentacoes.nextval, current_date, vvalor, 'D', vorigem);
+
+  -- atualiza o saldo da conta
+	update contas
+	set saldo = saldo - vvalor
+	where numero = vorigem;
+  
+  EXCEPTION
+    WHEN saldo_insuficiente THEN
+      raise_application_error(-20001, 'Saldo insuficiente para realizar saque');
+    WHEN no_data_found THEN
+      raise_application_error(-20002, 'Conta nao encontrada');
+end;
+/
+```
+*executa*
+```
+exec saca (1001, 5000);
+exec saca (1002, 310);
+```
+
+* Transfere valor de uma conta de origem para uma conta de destino
+*d) transfere(Conta origem, conta destino, valor)*
+```
+CREATE or replace procedure transfere(vorigem in int,vdestino in int, vvalor in real) as
+begin
+	saca(vorigem, vvalor);
+	deposita(vdestino, vvalor);
+end;
+/
+```
+*executar*
+```
+exec transfere(1001,1002, 100);
+exec transfere(1002,1001, 200);
+
+```
 
