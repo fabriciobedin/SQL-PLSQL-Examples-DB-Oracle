@@ -34,14 +34,14 @@ from produtos
 order by descricao;
 ```
 
-##### •Listar a descrição, localização dos produtos que estão com o estoque atual abaixo do valor mínimo estabelecido
+* Listar a descrição, localização dos produtos que estão com o estoque atual abaixo do valor mínimo estabelecido
 ```
 select descricao, localizacao
 from produtos
 where estoqueatual < estoqueminimo; 
 ```
 
-##### •Listar o nome dos fornecedores do produto de código 2
+* Listar o nome dos fornecedores do produto de código 2
 ```
 select pessoas.nome
 from pessoas, produtosfornecedores
