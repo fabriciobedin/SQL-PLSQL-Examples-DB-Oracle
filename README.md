@@ -23,18 +23,18 @@ Examples I'm seeing in class
 
 ### Alguns usos do SELECT
 
-#•Elabore uma lista de preços de produtos, consistindo de: código, descrição, localização e preço do produto. A lista deve ser ordenada pela descrição do produto.
+#### •Elabore uma lista de preços de produtos, consistindo de: código, descrição, localização e preço do produto. A lista deve ser ordenada pela descrição do produto.
 <code>select codigo, descricao, localizacao, preco</code><br>
 <code>from produtos</code><br>
 <code>order by descricao;</code><br>
 
-#•Listar o nome dos fornecedores do produto de código 2
+##### •Listar o nome dos fornecedores do produto de código 2
 <code>select pessoas.nome</code><br>
 <code>from pessoas, produtosfornecedores</code><br>
 <code>where pessoas.codigo = produtosfornecedores.fornecedor</code><br>
 <code>and produtosfornecedores.produto = 2;</code><br>
 
-#•Listar o nome, telefone, cidade dos clientes que possuem parcelas ainda não pagas (com a data de pagamento vazia) juntamente com a data de vencimento e o valor destas parcelas
+###### •Listar o nome, telefone, cidade dos clientes que possuem parcelas ainda não pagas (com a data de pagamento vazia) juntamente com a data de vencimento e o valor destas parcelas
 <code>select pessoas.nome,</code><br>
 <code>       pessoas.telefone,</code><br>
 <code>       cidades.cidade,</code><br>
