@@ -849,5 +849,42 @@ from funcionarios
 select * from funcionarios
 ```
 
+* 3) Os dados de um determinado projeto cujo código e passado por argumento;
 ```
+create or replace function numeroProjetos(vdepto int) return int as
+ vnum int;
+begin
+      select count(*) into vnum
+      from funcionariosprojetos, funcionarios
+      where funcionariosprojetos.codigofuncionario = funcionarios.codigo
+      and   funcionarios.codigodepartamento = vdepto;
+
+      return vnum;
+end;
+/
+
+select numeroProjetos(2) from dual;
+```
+
+* 4) O numero de projetos no qual um departamento, cujo código é passado como argumento participa.
+```
+create or replace function dadosProjeto(vproj int) return projetos%ROWTYPE as
+ registro projetos%ROWTYPE;
+begin
+    select * into registro
+    from projetos
+    where codigo = vproj;
+    
+    return registro;
+end;
+/
+
+set serveroutput on;
+declare
+ registro projetos%ROWTYPE;
+begin
+  registro :=  dadosProjeto(1);
+  DBMS_OUTPUT.PUT_LINE(registro.codigo || '-' || registro.nome || '-' || registro.duracao);
+end;
+/
 ```
