@@ -571,5 +571,138 @@ exec cadastradisciplina ('Analise e Projeto Sist.');
 select * from disciplinas;
 ```
 
+* procedure que insere uma nova turma para uma disciplina
+*c) abreTurma (Código da Disciplina, ano, semestre, vagas)*
+```
+create or replace procedure abreturma(varcoddisc in int, varano in int, 
+                                      varsemestre in int, varvagas in int) is
+begin
+  insert into turmas (codigodisciplina, ano, semestre, vagas) 
+  values (varcoddisc, varano, varsemestre, varvagas); 
+end;
+/
 
+exec abreturma(2, 2017, 1, 3);
+exec abreturma(3, 2017, 1, 30);
+exec abreturma(4, 2017, 1, 20);
+
+select * from turmas;
+```
+
+* procedure que insere uma matrícula de um aluno, associada com uma disciplina que o aluno irá cursar em um determinado ano e semestre
+* Caso o número de vagas para a turma da disciplina em questão já estejam preenchidas, a função deverá retornar erro específico
+*d) matricula (Matrícula do Aluno, Código da Disciplina, ano, semestre)*
+```
+create or replace procedure matricula(valuno int, vdisc int, vano int, vsemestre int) is 
+vvagas int;
+vmatriculados int;
+begin 
+     -- busca numero de matriculados 
+     select count(*) into vmatriculados
+     from matriculas
+     where codigodisciplina = vdisc
+     and   ano = vano
+     and   semestre = vsemestre;
+
+     -- busca numero de vagas 
+     select vagas into vvagas
+     from turmas
+     where codigodisciplina = vdisc
+     and   ano = vano
+     and semestre = vsemestre;
+     
+     -- teste vagas preenchidas 
+     if ( vvagas <= vmatriculados) then
+        raise_application_error(-20001, 'Vagas esgotadas');
+     end if;
+
+     insert into matriculas (matriculaAluno, codigodisciplina, ano, semestre)
+     values (valuno, vdisc, vano, vsemestre);
+end;
+/
+
+select * from turmas
+select * from alunos
+
+exec matricula(1001, 2, 2017, 1);
+exec matricula(1002, 2, 2017, 1);
+exec matricula(1003, 2, 2017, 1);
+-- erro
+exec matricula(1004, 2, 2017, 1);
+```
+
+* procedure que complementa uma matrícula de aluno, atualizando as informações de nota e faltas que o atingiu
+e) aproveitamento (Matrícula do Aluno, Código da Disciplina, ano, semestre, nota, faltas)
+```
+create or replace procedure aproveitamento(vmat int, vdisc int, vano int, 
+vsem int, vnota real, vfaltas int) is
+begin
+  update matriculas
+  set nota = vnota,
+      faltas = vfaltas
+  where matriculaAluno = vmat
+  and codigoDisciplina =  vdisc
+  and ano = vano
+  and semestre = vsem;
+end;
+/
+
+exec aproveitamento (1001, 2, 2017, 1, 9.5, 4);
+
+select * from matriculas
+```
+
+### Procedures e Funções - Esquema Projetos
+
+*Departamentos = (#Código do departamento, nome)<br>
+Projetos = (#Código do projeto, nome, duração)<br>
+Funcionários = (#Código do funcionário, nome, @código do departamento, numeroProjetos, numeroDependentes)<br>
+Dependentes = (#Código do dependente, nome, @Código do funcionário)<br>
+FuncionáriosProjetos = (@#Código do funcionário, @#Código do projeto, horas alocadas)*<br>
+
+*Observação:<br>
+Nenhum funcionário poderá ter mais que 40 horas alocadas em projetos (gerar erro)<br>
+A coluna numeroProjetos em Funcionários deverá ser incrementada à medida em que a Tabela FuncionariosProjetos for atualizada<br>
+A cada inclusão de dependente, a coluna numeroDependentes em Funcionários deverá ser atualizada*<br>
+
+```
+CREATE TABLE Departamentos(
+codigo int NOT NULL PRIMARY KEY,
+departamento VARCHAR (30) NOT NULL
+);
+CREATE TABLE Projetos(
+codigo int NOT NULL PRIMARY KEY,
+nome VARCHAR (50) NOT NULL,
+duracao varchar(20)
+);
+CREATE TABLE Funcionarios(
+codigo int NOT NULL PRIMARY KEY,
+nome VARCHAR(30) NOT NULL,
+codigoDepartamento integer NOT NULL,
+numeroProjetos int,
+numeroDependentes int,
+FOREIGN KEY (codigoDepartamento) REFERENCES Departamentos(codigo)
+);
+CREATE TABLE Dependentes(
+codigo int NOT NULL PRIMARY KEY,
+nome VARCHAR (30) NOT NULL,
+codigoFuncionario integer NOT NULL,
+FOREIGN KEY (codigoFuncionario ) REFERENCES Funcionarios (codigo)
+);
+CREATE TABLE FuncionariosProjetos(
+codigoFuncionario integer NOT NULL,
+codigoProjeto integer NOT NULL,
+horasAlocadas integer,
+PRIMARY KEY (codigoFuncionario, codigoProjeto),
+FOREIGN KEY (codigoFuncionario ) REFERENCES Funcionarios (codigo),
+FOREIGN KEY (codigoProjeto) REFERENCES Projetos(codigo)
+);
+
+create sequence seq_projetos start with 1;
+create sequence seq_departamentos;
+create sequence seq_funcionarios start with 1;
+create sequence seq_dependentes start with 1;
+````
+
+* a) incluiProjeto (nome, duração)
 
