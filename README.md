@@ -703,6 +703,7 @@ create sequence seq_departamentos;
 create sequence seq_funcionarios start with 1;
 create sequence seq_dependentes start with 1;
 ```
+#### Procedures
 
 * a) incluiProjeto (nome, duração)
 ```
@@ -751,7 +752,7 @@ exec incluiFuncionario('Funcionario tres', 2);
 select * from funcionarios
 ```
 
-* c) incluiDependente (nome, codigoFuncionario)
+* d) incluiDependente (nome, codigoFuncionario)
 ```
 create or replace procedure incluiDependente(vnome string, vfunc int) as
 begin
@@ -770,11 +771,82 @@ select * from dependentes
 select * from funcionarios
 ```
 
+* e) incluiParticipacao (codigoFuncionario, codigoProjeto, horas)
+```
+create or replace procedure incluiParticipacao(vfunc int, vproj int, vhoras int) as
+  total int;
+begin
+    -- obtem total de horas ja alocadas para o funcionario
+    select sum(horasAlocadas) into total
+    from funcionariosprojetos
+    where codigofuncionario = vfunc;
+    
+    -- testa se a inclusao ira superar o limite de horas
+    if (total + vhoras > 40) then
+      raise_application_error(-20001, 'Participacoes irao superar 40 horas semanais');
+    end if;
+    
+    insert into funcionariosprojetos values (vfunc, vproj, vhoras);
+    
+    -- atualiza o numero de participacoes do funcionario em questao
+    update funcionarios
+    set numeroprojetos = numeroprojetos + 1
+    where codigo = vfunc;
+end;
+/
+exec incluiParticipacao(1, 1, 20);
+exec incluiParticipacao(2, 1, 15);
+exec incluiParticipacao(3, 1, 10);
+
+-- erro
+exec incluiParticipacao(1, 2, 22);
+
+select * from funcionarios
+select * from projetos
+select * from funcionariosprojetos
+```
+
+#### Funções
+
+* 1) O total de horas trabalhadas por um funcionário cujo código e passado por argumento;
+```
+create or replace function totalHoras(vfunc int) return int as
+ vtotal int;
+begin
+    -- obtem total de horas ja alocadas para o funcionario
+    select sum(horasAlocadas) into vtotal
+    from funcionariosprojetos
+    where codigofuncionario = vfunc;  
+    
+    return vtotal;
+end;
+/
+
+select * from funcionariosprojetos
+
+select totalhoras(1) from dual;
+```
+
+* 2) O número de dependentes de um funcionário, cujo código é passado por argumento;
 
 ```
-```
+create or replace function numeroDependentes(vfunc int) return int as
+ vnum int;
+begin
+    -- obtem total de horas ja� alocadas para o funcionario
+    select numerodependentes into vnum
+    from funcionarios
+    where codigo = vfunc;  
+    
+    return vnum;
+end;
+/
 
-```
+select nome, numerodependentes (codigo)
+from funcionarios
+
+
+select * from funcionarios
 ```
 
 ```
