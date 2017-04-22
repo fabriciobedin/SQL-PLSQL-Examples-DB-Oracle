@@ -702,7 +702,80 @@ create sequence seq_projetos start with 1;
 create sequence seq_departamentos;
 create sequence seq_funcionarios start with 1;
 create sequence seq_dependentes start with 1;
-````
+```
 
 * a) incluiProjeto (nome, duração)
+```
+create or replace procedure incluiProjeto (vnome string, vdura int) as
+begin
+      insert into projetos (codigo, nome, duracao) values 
+      (seq_projetos.nextval, vnome, vdura);
+end;
+/
 
+exec incluiprojeto('Novo Sistema', 36);
+exec incluiprojeto('Integracao de plataforma', 12);
+exec incluiprojeto('Automacao linha producao', 24);
+
+select * from projetos;
+```
+
+* b) incluiDepartamento (nome)
+```
+create or replace procedure incluiDepartamento (vnome string) as
+begin
+      insert into departamentos (codigo, departamento) values 
+      (seq_departamentos.nextval, vnome);
+end;
+/
+exec incluiDepartamento('Recursos Humanos');
+exec incluiDepartamento('Tecnologia Informacao');
+exec incluiDepartamento('Financeiro');
+
+select * from departamentos;
+```
+
+* c) incluiFuncionario (nome, codigodepartamento)
+```
+create or replace procedure incluiFuncionario(vnome string, vdepto int) as
+begin
+  insert into funcionarios (codigo, nome, codigodepartamento, numeroprojetos, 
+  NUMERODEPENDENTES) values (seq_funcionarios.nextval, vnome, vdepto, 0, 0);
+end;
+/
+
+exec incluiFuncionario('Funcionario um', 2);
+exec incluiFuncionario('Funcionario dois', 3);
+exec incluiFuncionario('Funcionario tres', 2);
+
+select * from funcionarios
+```
+
+* c) incluiDependente (nome, codigoFuncionario)
+```
+create or replace procedure incluiDependente(vnome string, vfunc int) as
+begin
+  insert into dependentes (codigo, nome, codigofuncionario) 
+  values (seq_dependentes.nextval, vnome, vfunc);
+  
+  update funcionarios
+  set numerodependentes = numerodependentes + 1
+  where codigo = vfunc;
+end;
+/
+
+exec incluiDependente('Mariazinha', 2);
+
+select * from dependentes
+select * from funcionarios
+```
+
+
+```
+```
+
+```
+```
+
+```
+```
