@@ -302,14 +302,14 @@ END;
 /
 ```
 
-* Elabore um procedimento armazenado inseretriangulo(vlr1, vlr2, vlr3) que recebe valores para os lados de um triângulo e a seguir insere na tabela abaixo os valores dos lados dos triangulos e o tipo do triângulo formado (equilátero, isósceles, escaleno).
-*Triangulos 
-id integer
-vlr1 number
-vlr2 number
-vlr3 number
-tipo varchar
-Caso os valores fornecidos para os lados não permitam a formação de um triângulo, o usuário deverá receber uma mensagem indicativa.*
+* Elabore um procedimento armazenado inseretriangulo(vlr1, vlr2, vlr3) que recebe valores para os lados de um triângulo e a seguir insere na tabela abaixo os valores dos lados dos triangulos e o tipo do triângulo formado (equilátero, isósceles, escaleno).<br>
+*Triangulos <br>
+id integer <br>
+vlr1 number <br>
+vlr2 number <br>
+vlr3 number <br>
+tipo varchar <br>
+Caso os valores fornecidos para os lados não permitam a formação de um triângulo, o usuário deverá receber uma mensagem indicativa.*<br>
 
 ```
 create table triangulos (
