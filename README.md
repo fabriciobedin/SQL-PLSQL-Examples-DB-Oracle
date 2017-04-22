@@ -357,13 +357,13 @@ execute inseretriangulo(10,20,50);
 select * from triangulos;
 ```
 ### Procedure Banco
-* O esquema abaixo representa de forma parcial uma agência bancária. A respeito deste esquema, desenvolva os seguintes procedures:
+* O esquema abaixo representa de forma parcial uma agência bancária. A respeito deste esquema, desenvolva os seguintes procedures:<br>
 *Correntista = #Código, nome<br>
 Contas = #Número, saldo, @Código do correntista<br>
 Movimentaçao=#Número, data, valor, natureza (débito/crédito), @numero da conta*<br>
 
-*Observações:
-a cada operação realizada (saque, depósito, etc) um registro de movimentação deve ser inserido automaticamente pelas funções na tabela de Movimentação, descrevendo a operação se houve débito ou crédito
+*Observações:<br>
+A cada operação realizada (saque, depósito, etc) um registro de movimentação deve ser inserido automaticamente pelas funções na tabela de Movimentação, descrevendo a operação se houve débito ou crédito.<br>
 não poderá haver saque de valor superior ao disponível no saldo da conta*
 
 ```
