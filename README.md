@@ -489,3 +489,87 @@ exec transfere(1002,1001, 200);
 
 ```
 
+### Procedure Sistema de Matriculas
+
+* Considerando o esquema parcial para um sistema de matrículas demonstrado acima, elabore os seguintes procedures, com as funcionalidades solicitadas.<br>
+*Alunos (#matricula, nome, telefone, curso)<br>
+Disciplinas (#codigo, disciplina)<br>
+Turmas (@#codigoDisciplina, #ano, #semestre, vagas)<br>
+Matriculas (@#matriculaAluno, @#codigoDisciplina, #ano, #semestre, nota, faltas)*<br>
+
+```
+create table alunos (
+matricula int not null primary key,
+nome varchar(30),
+telefone varchar(15),
+curso varchar(30)
+);
+
+create table disciplinas (
+codigo int not null primary key,
+disciplina varchar(30)
+);
+
+create table turmas (
+codigodisciplina int not null,
+ano int,
+semestre int,
+vagas int,
+primary key (codigodisciplina, ano, semestre),
+foreign key (codigodisciplina) references disciplinas (codigo)
+);
+
+create table matriculas (
+matriculaAluno integer,
+codigoDisciplina integer,
+ano integer,
+semestre integer,
+nota numeric(3,1),
+faltas integer,
+primary key (matriculaAluno, codigoDisciplina, ano, semestre),
+foreign key (matriculaAluno) references alunos(matricula),
+foreign key (codigoDisciplina) references disciplinas(codigo)
+);
+
+create sequence seq_alunos start with 1000;
+create sequence seq_disciplinas;
+```
+
+* procedure que cadastra um novo aluno no banco de dados
+*a) cadastraAluno( nome, telefone, curso)*
+```
+create or replace procedure cadastraaluno(varnome in string, varfone string, 
+                                          varcurso string) is
+begin
+  insert into alunos (matricula, nome, telefone, curso) 
+  values (seq_alunos.nextval, varnome, varfone, varcurso); 
+end;
+/
+
+exec cadastraaluno ('Aluno 1000', '99991111', 'Analise e Desenv. Sistemas');
+exec cadastraaluno ('Aluno 1001', '11111111', 'Analise e Desenv. Sistemas');
+exec cadastraaluno ('Aluno 1002', '22222222', 'Analise e Desenv. Sistemas');
+exec cadastraaluno ('Aluno 1003', '33333333', 'Analise e Desenv. Sistemas');
+exec cadastraaluno ('Aluno 1004', '44444444', 'Analise e Desenv. Sistemas');
+```
+
+* procedure que cadastra uma nova disciplina no banco de dados
+*b) cadastraDisciplina (disciplina)*
+```
+create or replace procedure cadastradisciplina(vardisciplina in string) is
+begin
+  insert into disciplinas (codigo, disciplina) 
+  values (seq_disciplinas.nextval, vardisciplina); 
+end;
+/
+
+exec cadastradisciplina ('Fundamentos Banco Dados');
+exec cadastradisciplina ('Banco Dados Avancados');
+exec cadastradisciplina ('Programacao Orientada Objetos');
+exec cadastradisciplina ('Analise e Projeto Sist.');
+
+select * from disciplinas;
+```
+
+
+
