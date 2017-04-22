@@ -358,9 +358,9 @@ select * from triangulos;
 ```
 ### Procedure Banco
 * O esquema abaixo representa de forma parcial uma agência bancária. A respeito deste esquema, desenvolva os seguintes procedures:
-*Correntista = #Código, nome
-Contas = #Número, saldo, @Código do correntista
-Movimentaçao=#Número, data, valor, natureza (débito/crédito), @numero da conta*
+*Correntista = #Código, nome<br>
+Contas = #Número, saldo, @Código do correntista<br>
+Movimentaçao=#Número, data, valor, natureza (débito/crédito), @numero da conta*<br>
 
 *Observações:
 a cada operação realizada (saque, depósito, etc) um registro de movimentação deve ser inserido automaticamente pelas funções na tabela de Movimentação, descrevendo a operação se houve débito ou crédito
@@ -405,7 +405,6 @@ begin
 end;
 /
 ```
-*executa*
 ```
 exec abreconta('Jose');
 exec abreconta('Maria');
@@ -427,7 +426,6 @@ begin
 end;
 /
 ```
-*executa*
 ```
 exec deposita (1001, 500.75);
 exec deposita (1002, 2355.85);
@@ -470,7 +468,6 @@ begin
 end;
 /
 ```
-*executa*
 ```
 exec saca (1001, 5000);
 exec saca (1002, 310);
@@ -486,7 +483,6 @@ begin
 end;
 /
 ```
-*executar*
 ```
 exec transfere(1001,1002, 100);
 exec transfere(1002,1001, 200);
