@@ -233,6 +233,27 @@ PRIMARY KEY (codigoFuncionario, codigoProjeto),
 FOREIGN KEY (codigoFuncionario ) REFERENCES Funcionarios (codigo),
 FOREIGN KEY (codigoProjeto) REFERENCES Projetos(codigo)
 );
+
+INSERT INTO Departamentos VALUES(101, 'Recursos Humanos');
+INSERT INTO Departamentos VALUES(102, 'Produção');
+INSERT INTO Departamentos VALUES(103, 'Vendas');
+INSERT INTO Projetos VALUES(222, 'Software de cadastro de funcionários', '6 meses');
+INSERT INTO Projetos VALUES(233, 'Novo ponto de vendas', '3 meses');
+INSERT INTO Projetos VALUES(244, 'Compra de maquinário novo', '2 semanas');
+INSERT INTO Funcionarios VALUES(341, 'Aline Silveira', 103);
+INSERT INTO Funcionarios VALUES(351, 'Carlos José Costa', 102);
+INSERT INTO Funcionarios VALUES(361, 'Débora Freitas', 101);
+INSERT INTO Dependentes VALUES(479, 'Henrique Silveira', 341);
+INSERT INTO Dependentes VALUES(489, 'Juan Freitas', 361);
+INSERT INTO Dependentes VALUES(499, 'Luana Costa', 351);
+INSERT INTO Dependentes VALUES(500, 'Juquinha', 341);
+INSERT INTO Dependentes VALUES(501, 'Mariazinha', 341);
+INSERT INTO Dependentes VALUES(502, 'Pedrinho', 341);
+INSERT INTO FuncionariosProjetos VALUES(361, 222, 30);
+INSERT INTO FuncionariosProjetos VALUES(341, 233, 60);
+INSERT INTO FuncionariosProjetos VALUES(351, 244, 20);
+INSERT INTO FuncionariosProjetos VALUES(351, 222, 12);
+INSERT INTO FuncionariosProjetos VALUES(351, 233, 8);
 ```
 
 * Crie uma visão contendo o nome do projeto, sua duração e o código do departamento responsável.
