@@ -203,6 +203,38 @@ where preco = ( select max(preco)
 
 ## Visões
 
+```
+CREATE TABLE Departamentos(
+codigo integer NOT NULL PRIMARY KEY,
+departamento VARCHAR (30) NOT NULL
+);
+CREATE TABLE Projetos(
+codigo integer NOT NULL PRIMARY KEY,
+nome VARCHAR (50) NOT NULL,
+duracao varchar(20)
+);
+CREATE TABLE Funcionarios(
+codigo integer NOT NULL PRIMARY KEY,
+nome VARCHAR(30) NOT NULL,
+codigoDepartamento integer NOT NULL,
+FOREIGN KEY (codigoDepartamento) REFERENCES Departamentos(codigo)
+);
+CREATE TABLE Dependentes(
+codigo integer NOT NULL PRIMARY KEY,
+nome VARCHAR (30) NOT NULL,
+codigoFuncionario integer NOT NULL,
+FOREIGN KEY (codigoFuncionario ) REFERENCES Funcionarios (codigo)
+);
+CREATE TABLE FuncionariosProjetos(
+codigoFuncionario integer NOT NULL,
+codigoProjeto integer NOT NULL,
+horasAlocadas integer,
+PRIMARY KEY (codigoFuncionario, codigoProjeto),
+FOREIGN KEY (codigoFuncionario ) REFERENCES Funcionarios (codigo),
+FOREIGN KEY (codigoProjeto) REFERENCES Projetos(codigo)
+);
+```
+
 * Crie uma visão contendo o nome do projeto, sua duração e o código do departamento responsável.
 ```
 create view view1 as
