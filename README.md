@@ -942,7 +942,7 @@ end;
 /
 ```
 
-#### Trigger
+## Trigger
 
 ```
 CREATE TABLE produto (
