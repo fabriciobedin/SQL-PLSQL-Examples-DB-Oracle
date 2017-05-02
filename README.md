@@ -941,3 +941,38 @@ begin
 end;
 /
 ```
+
+#### Trigger
+
+```
+CREATE TABLE produto (
+codigo int not null primary key,
+valor NUMBER(7,2)
+);
+CREATE TABLE valor_produto(
+codigo int,
+data date,
+valor_anterior NUMBER(7,2),
+valor_novo NUMBER(7,2)
+);
+
+insert into produto values (2, 45.99);
+
+select * from produto;
+select * from valor_produto;
+update produto 
+set valor = 33.98 
+where codigo = 1;
+
+CREATE OR REPLACE TRIGGER verifica_valor
+BEFORE UPDATE OF valor
+ON produto
+FOR EACH ROW
+BEGIN
+ INSERT INTO valor_produto (codigo, data, valor_anterior, valor_novo)
+ VALUES (:OLD.codigo, current_date, :OLD.valor,:NEW.valor);
+END;
+/
+```
+
+
