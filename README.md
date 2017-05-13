@@ -973,6 +973,36 @@ BEGIN
  VALUES (:OLD.codigo, current_date, :OLD.valor,:NEW.valor);
 END;
 /
+
+insert into produto values (1, 25.85);
+insert into produto values (2, 35.77);
+insert into produto values (3, 33.22);
+
+select * from produto;
+
+update produto
+set valor = 99.33
+where codigo = 2;
+
+select * from valor_produto
 ```
-
-
+```
+create sequence seq_cidades minvalue 1;
+create table cidades (
+codigo int not null primary key,
+cidade varchar(30),
+uf char(2)
+);
+CREATE OR REPLACE TRIGGER auto_incremento_cidades
+before insert ON cidades
+FOR EACH ROW
+begin
+  :new.codigo := seq_cidades.nextval;
+end;
+/
+insert into cidades values (100, 'Passo Fundo', 'RS');
+insert into cidades values (999, 'Marau', 'RS');
+insert into cidades values (444, 'Porto Alegre', 'RS');
+insert into cidades values (null, 'Porto Alegre', 'RS');
+select * from cidades
+```
